@@ -14,6 +14,7 @@ Example:
 """
 
 from .jwt import JwtValidator, Claims
+from time import time
 
 
 struct AuthMiddleware:
@@ -60,6 +61,33 @@ struct AuthMiddleware:
         # Extract token
         var token = auth_header[len(self.token_prefix):]
 
+        # SECURITY FIX: Use time-validated authentication by default
+        var current_time = Int64(time())
+        return self.validator.validate_with_time(token, current_time)
+
+    fn authenticate_skip_time(self, headers: Dict[String, String]) -> Claims:
+        """
+        Authenticate request WITHOUT time validation.
+
+        WARNING: This method does NOT check token expiration (exp) or
+        not-before (nbf) claims. Only use this if you have a specific
+        reason to skip time validation.
+
+        For normal authentication, use `authenticate()` instead.
+        """
+        var claims = Claims()
+
+        if self.header_name not in headers:
+            claims.error = "Missing " + self.header_name + " header"
+            return claims
+
+        var auth_header = headers[self.header_name]
+
+        if not auth_header.startswith(self.token_prefix):
+            claims.error = "Invalid token format"
+            return claims
+
+        var token = auth_header[len(self.token_prefix):]
         return self.validator.validate(token)
 
     fn get_token(self, headers: Dict[String, String]) -> String:
