@@ -1,0 +1,15 @@
+[project]
+name = "mojo-auth"
+version = "0.1.0"
+description = "JWT authentication and RBAC for Mojo applications"
+authors = ["IDEA2CODE"]
+license = "MIT"
+readme = "README.md"
+
+[dependencies]
+max = ">=24.6,<25"
+
+[tasks]
+build = "mojo build src/__init__.mojo -o auth"
+test = "mojo test tests/"
+format = "mojo format src/ tests/"
